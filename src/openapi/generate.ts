@@ -72,8 +72,9 @@ export function properties(
     return {
       name,
       type: type(proj, api, prop, imports),
-      hasQuestionToken: !(required || []).includes(name),
       docs: prop.description ? [prop.description] : [],
+      hasQuestionToken: !(required || []).includes(name),
+      isReadonly: prop.description ? prop.description.includes('Read-only.') : false,
     }
   })
 }
