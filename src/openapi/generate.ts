@@ -1,12 +1,16 @@
 import {Project, PropertySignatureStructure} from 'ts-simple-ast'
 
-import {ensureFile, Imports} from '../generate/util'
-import {API, Definition, resolve, Value} from './'
+import {ensureFile, filePath, Imports} from '../generate/util'
+import {API, Definition, resolve, Value, GroupVersionKind} from './'
 
 export default function generate(proj: Project, api: API) {
   let imports: Map<string, Imports> = new Map()
 
   for (let {name, path, def} of definitions(api)) {
+    if (name in elidedTypes) {
+      continue
+    }
+
     let file = ensureFile(proj, filePath(path))
     let fileImports = imports.get(file.getFilePath())
     if (fileImports == null) {
@@ -60,7 +64,7 @@ export function definitions(api: API): ResolvedDefinition[] {
 export function properties(
   proj: Project,
   api: API,
-  {required, properties: props}: Definition,
+  {required, properties: props, 'x-kubernetes-group-version-kind': gvk}: Definition,
   imports: Imports
 ): PropertySignatureStructure[] {
   if (!props) {
@@ -71,7 +75,7 @@ export function properties(
     let prop = props[name]
     return {
       name,
-      type: type(proj, api, prop, imports),
+      type: kindType(gvk, name) || type(proj, api, imports, prop),
       docs: prop.description ? [prop.description] : [],
       hasQuestionToken: !(required || []).includes(name),
       isReadonly: prop.description ? prop.description.includes('Read-only.') : false,
@@ -79,7 +83,23 @@ export function properties(
   })
 }
 
-export function type(proj: Project, api: API, value: Value, imports: Imports): string {
+export function kindType(
+  gvkList: GroupVersionKind[] | undefined,
+  propName: string
+): string | undefined {
+  if (gvkList != null && gvkList.length === 1) {
+    const gvk = gvkList[0]
+    if (propName === 'apiVersion') {
+      return JSON.stringify([gvk.group, gvk.version].filter(Boolean).join('/'))
+    } else if (propName === 'kind') {
+      return JSON.stringify(gvk.kind)
+    }
+  }
+
+  return undefined
+}
+
+export function type(proj: Project, api: API, imports: Imports, value: Value): string {
   let t = ''
 
   if ('$ref' in value) {
@@ -105,10 +125,10 @@ export function type(proj: Project, api: API, value: Value, imports: Imports): s
         t = 'number'
         break
       case 'object':
-        t = `{[name: string]: ${type(proj, api, value.additionalProperties, imports)}}`
+        t = `{[name: string]: ${type(proj, api, imports, value.additionalProperties)}}`
         break
       case 'array':
-        t = `Array<${type(proj, api, value.items, imports)}>`
+        t = `Array<${type(proj, api, imports, value.items)}>`
         break
       default:
         assertNever(value)
@@ -120,16 +140,28 @@ export function type(proj: Project, api: API, value: Value, imports: Imports): s
   return t
 }
 
+const simplifyDefName = (name: string): string | undefined => {
+  const simplifications = {
+    'io.k8s.api.': '',
+    'io.k8s.apimachinery.pkg.apis.': '',
+    'io.k8s.apimachinery.pkg.': '',
+    'io.k8s.apiextensions-apiserver.pkg.apis.': '',
+  }
+  for (let [prefix, replacement] of Object.entries(simplifications)) {
+    if (name.startsWith(prefix)) {
+      return `${replacement}${name.slice(prefix.length)}`
+    }
+  }
+
+  return undefined
+}
+
 export function parseDefName(name: string): {name: string; path: string} | undefined {
-  const match = /^io\.k8s\.(?:(apimachinery)\.pkg(?:\.apis)?|api)/.exec(name)
-  if (match == null) {
+  let simplifiedName = simplifyDefName(name)
+  if (simplifiedName == null) {
     return undefined
   }
-  name = name.slice(match[0].length)
-
-  if (match[1]) {
-    name = `${match[1]}.${name}`
-  }
+  name = simplifiedName
 
   let parts = name.split('.')
   name = parts[parts.length - 1]
@@ -142,11 +174,10 @@ const elidedTypes: {[name: string]: string} = {
   IntOrString: 'number | string',
 }
 const scalarTypes: {[name: string]: string} = {
+  Quantity: 'string',
   Time: 'string',
   MicroTime: 'string',
 }
-
-const filePath = (path: string): string => `src/${path}.ts`
 
 const assertNever = (_: never) => {
   throw new Error('"unreachable" code was reached')

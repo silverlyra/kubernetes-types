@@ -16,6 +16,9 @@
     "typescript": "^3.2.2"
   },
   "dependencies": {
+    "@types/mkdirp": "^0.5.2",
+    "argparse": "^1.0.10",
+    "mkdirp": "^0.5.1",
     "ts-simple-ast": "^20.0.0"
   }
 }

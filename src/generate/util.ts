@@ -38,3 +38,5 @@ export const ensureFile = (proj: Project, path: string): SourceFile => {
   }
   return sourceFile
 }
+
+export const filePath = (importPath: string): string => `${importPath}.ts`

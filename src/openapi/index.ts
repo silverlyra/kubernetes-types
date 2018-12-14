@@ -15,6 +15,13 @@ export interface Definition {
   description: string
   required?: string[]
   properties?: {[name: string]: Property}
+  'x-kubernetes-group-version-kind'?: GroupVersionKind[]
+}
+
+export interface GroupVersionKind {
+  group: string
+  version: string
+  kind: string
 }
 
 export interface PropertyMeta {
