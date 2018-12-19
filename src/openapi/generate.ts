@@ -177,6 +177,9 @@ const scalarTypes: {[name: string]: string} = {
   Quantity: 'string',
   Time: 'string',
   MicroTime: 'string',
+  JSONSchemaPropsOrArray: 'JSONSchemaProps | JSONSchemaProps[]',
+  JSONSchemaPropsOrBool: 'JSONSchemaProps | boolean',
+  JSONSchemaPropsOrStringArray: 'JSONSchemaProps | string[]',
 }
 
 const assertNever = (_: never) => {
