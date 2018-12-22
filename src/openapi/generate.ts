@@ -1,7 +1,7 @@
 import {Project, PropertySignatureStructure} from 'ts-simple-ast'
 
 import {ensureFile, filePath, Imports} from '../generate/util'
-import {API, Definition, resolve, Value, GroupVersionKind} from './'
+import {API, Definition, GroupVersionKind, resolve, Value} from './'
 
 export default function generate(proj: Project, api: API) {
   let imports: Map<string, Imports> = new Map()

@@ -1,0 +1,11 @@
+{
+  "name": "kubernetes-types",
+  "version": "",
+  "description": "TypeScript definitions of Kubernetes resource types",
+  "repository": "https://github.com/silverlyra/kubernetes-types",
+  "author": "Lyra Naeseth <lyra@naeseth.com>",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "typescript": "^3.2.0"
+  }
+}

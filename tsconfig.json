@@ -6,6 +6,7 @@
     "rootDir": "src",
     "moduleResolution": "node",
     "module": "commonjs",
+    "resolveJsonModule": true,
     "declaration": true,
     "sourceMap": true,
     "esModuleInterop": true,
@@ -25,5 +26,5 @@
     "pretty": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules/**"]
+  "exclude": ["node_modules/**", "bin/**"]
 }
