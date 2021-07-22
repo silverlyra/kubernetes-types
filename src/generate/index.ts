@@ -25,6 +25,8 @@ interface Arguments {
 }
 
 async function main({api: apiVersion, file, patch, beta}: Arguments) {
+  apiVersion = normalizeVersion(apiVersion)
+
   let api: API = file ? JSON.parse(readFileSync(file, 'utf8')) : await fetchAPI(apiVersion)
 
   let proj = new Project({
@@ -36,7 +38,7 @@ async function main({api: apiVersion, file, patch, beta}: Arguments) {
   let result = proj.emitToMemory({emitOnlyDtsFiles: true})
   let files = result.getFiles()
 
-  const version = releaseVersion(api.info.version, {patch, beta})
+  const version = releaseVersion(apiVersion, {patch, beta})
   const destPath = path.normalize(path.join(__dirname, '..', '..', 'types', `v${version}`))
   for (let {filePath, text} of files) {
     let destFilePath = path.join(destPath, filePath.replace(/^\//, ''))
@@ -60,7 +62,7 @@ async function main({api: apiVersion, file, patch, beta}: Arguments) {
   )
 }
 
-async function fetchAPI(version: string): Promise<API> {
+function normalizeVersion(version: string): string {
   if (/^\d/.test(version)) {
     version = `v${version}`
   }
@@ -68,6 +70,10 @@ async function fetchAPI(version: string): Promise<API> {
     version = `${version}.0`
   }
 
+  return version
+}
+
+async function fetchAPI(version: string): Promise<API> {
   let response = await fetch(
     `https://raw.githubusercontent.com/kubernetes/kubernetes/${version}/api/openapi-spec/swagger.json`
   )
