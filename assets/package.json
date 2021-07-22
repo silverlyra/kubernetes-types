@@ -6,6 +6,6 @@
   "author": "Lyra Naeseth <lyra@naeseth.com>",
   "license": "Apache-2.0",
   "devDependencies": {
-    "typescript": "^3.2.0"
+    "typescript": ">=3.2.0"
   }
 }
