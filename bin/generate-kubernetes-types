@@ -1,2 +1,5 @@
 #!/usr/bin/env node
-require('kubernetes-types-generator/lib/generate')
+
+const path = require('path');
+
+require(path.normalize(path.join(__dirname, '..', 'lib', 'generate')));

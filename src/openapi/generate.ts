@@ -1,4 +1,4 @@
-import {Project, PropertySignatureStructure} from 'ts-simple-ast'
+import {Project, PropertySignatureStructure} from 'ts-morph'
 
 import {ensureFile, filePath, Imports} from '../generate/util'
 import {API, Definition, GroupVersionKind, resolve, Value} from './'
