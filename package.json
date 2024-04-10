@@ -7,22 +7,20 @@
   "author": "Lyra Naeseth <lyra@naeseth.com>",
   "license": "Apache-2.0",
   "bin": "./bin/generate-kubernetes-types",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
   "dependencies": {
     "argparse": "^1.0.10",
     "mkdirp": "^0.5.1",
-    "node-fetch": "^2.3.0",
-    "ts-simple-ast": "^20.0.0"
+    "node-fetch": "^3.3.0",
+    "ts-morph": "^1.0.0"
   },
   "devDependencies": {
     "@types/argparse": "^1.0.35",
     "@types/mkdirp": "^0.5.2",
-    "@types/node": "^10.12.14",
-    "@types/node-fetch": "^2.1.4",
+    "@types/node": "^20.0.0",
     "prettier": "^1.15.3",
-    "ts-node": "^7.0.1",
-    "tslint": "^5.11.0",
-    "tslint-config-prettier": "^1.17.0",
-    "tslint-plugin-prettier": "^2.0.1",
-    "typescript": "^3.2.2"
+    "typescript": "^5.4.0"
   }
 }

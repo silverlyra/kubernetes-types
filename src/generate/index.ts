@@ -9,9 +9,8 @@ import {readFileSync, writeFileSync} from 'fs'
 import {sync as mkdirpSync} from 'mkdirp'
 import fetch from 'node-fetch'
 import * as path from 'path'
-import Project, {ScriptTarget} from 'ts-simple-ast'
+import {Project, ScriptTarget} from 'ts-morph'
 
-import pkg from '../../package.json'
 import {API} from '../openapi'
 import generate from '../openapi/generate'
 
@@ -77,7 +76,9 @@ async function fetchAPI(version: string): Promise<API> {
   let response = await fetch(
     `https://raw.githubusercontent.com/kubernetes/kubernetes/${version}/api/openapi-spec/swagger.json`
   )
-  return response.json()
+
+  let api = await response.json()
+  return api as API
 }
 
 function releaseVersion(
@@ -94,12 +95,11 @@ function releaseVersion(
 
 const parser = new ArgumentParser({
   description: 'Generate TypeScript types for the Kubernetes API',
-  version: pkg.version,
 })
 parser.addArgument(['-a', '--api'], {help: 'Kubernetes API version', defaultValue: 'master'})
 parser.addArgument(['-f', '--file'], {help: 'Path to local swagger.json file'})
 parser.addArgument(['-p', '--patch'], {
-  help: 'Patch version of generates types',
+  help: 'Patch version of generated types',
   type: Number,
   defaultValue: 0,
 })
