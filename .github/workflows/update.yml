@@ -1,0 +1,65 @@
+name: "Check for updates"
+
+on:
+  pull_request: # FIXME(lyra)
+  workflow_dispatch:
+  schedule:
+    - cron: >-
+        15 15 * * *
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: read
+    steps:
+      - name: Check for updates
+        id: check
+        uses: silverlyra/script-action@v0.2
+        with:
+          script: |
+            const npmResponse = await fetch('https://registry.npmjs.org/kubernetes-types/');
+            const npmTags = (await npmResponse.json())['dist-tags'];
+            const [major, minor] = npmTags.latest.split('.', 2).map(Number);
+
+            const next = `${major}.${minor + 1}`;
+            console.log(`Latest package: ${npmTags.latest}; checking for Kubernetes ${next}`);
+
+            const { data: refs } = await github.rest.git.listMatchingRefs({
+              owner: 'kubernetes',
+              repo: 'kubernetes',
+              ref: `tags/v${next}.0`,
+            });
+
+            // exclude pre-releases
+            const ref = refs.find(({ ref }) => ref === `refs/tags/v${next}.0`);
+            const found = ref != null;
+
+            if (found) {
+              console.log(`Found new release: ${next}.0`);
+            }
+
+            return { next, found, ref };
+      - name: Checkout repository
+        if: fromJson(steps.check.outputs.result).found
+        uses: actions/checkout@v4
+      - name: Setup node.js
+        if: fromJson(steps.check.outputs.result).found
+        uses: actions/setup-node@v4
+        with:
+          cache: npm
+      - name: Update types
+        if: fromJson(steps.check.outputs.result).found
+        id: update
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          VERSION: v${{ fromJson(steps.check.outputs.result).found }}
+        run: |
+          npm ci
+          npx tsc -p tsconfig.json
+
+          ./bin/generate-kubernetes-types --api "$VERSION"
+
+          cd "./types/${VERSION}.0"
+          npm publish
