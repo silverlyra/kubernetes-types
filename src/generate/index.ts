@@ -10,10 +10,12 @@ import {sync as mkdirpSync} from 'mkdirp'
 import fetch from 'node-fetch'
 import * as path from 'path'
 import {Project, ScriptTarget} from 'ts-morph'
+import {fileURLToPath} from 'url'
 
-import {API} from '../openapi'
-import generate from '../openapi/generate'
+import {API} from '../openapi/index.js'
+import generate from '../openapi/generate.js'
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const assetsPath = path.normalize(path.join(__dirname, '..', '..', 'assets'))
 
 interface Arguments {
@@ -30,7 +32,7 @@ async function main({api: apiVersion, file, patch, beta}: Arguments) {
 
   let proj = new Project({
     compilerOptions: {target: ScriptTarget.ES2016},
-    useVirtualFileSystem: true,
+    useInMemoryFileSystem: true,
   })
 
   generate(proj, api)

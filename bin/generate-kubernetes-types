@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
-const path = require('path');
+import * as path from 'path';
+import { fileURLToPath } from 'url';
 
-require(path.normalize(path.join(__dirname, '..', 'lib', 'generate')));
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+await import(path.join(__dirname, '..', 'lib', 'generate', 'index.js'));

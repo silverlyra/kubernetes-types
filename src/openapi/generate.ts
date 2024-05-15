@@ -1,7 +1,7 @@
-import {Project, PropertySignatureStructure} from 'ts-morph'
+import {Project, PropertySignatureStructure, StructureKind} from 'ts-morph'
 
-import {ensureFile, filePath, Imports} from '../generate/util'
-import {API, Definition, GroupVersionKind, resolve, Value} from './'
+import {ensureFile, filePath, Imports} from '../generate/util.js'
+import {API, Definition, GroupVersionKind, resolve, Value} from './index.js'
 
 export default function generate(proj: Project, api: API) {
   let imports: Map<string, Imports> = new Map()
@@ -75,6 +75,7 @@ export function properties(
     let prop = props[name]
     return {
       name,
+      kind: StructureKind.PropertySignature,
       type: kindType(gvk, name) || type(proj, api, imports, prop),
       docs: prop.description ? [prop.description] : [],
       hasQuestionToken: !(required || []).includes(name),

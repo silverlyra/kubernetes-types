@@ -1,4 +1,4 @@
-import Project, {SourceFile} from 'ts-morph'
+import {Project, SourceFile} from 'ts-morph'
 
 export class Imports {
   private imports: Map<SourceFile, Set<string>> = new Map()
