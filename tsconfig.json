@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
-    "target": "es2020",
-    "lib": ["ES2022"],
+    "target": "es2022",
+    "lib": ["esnext"],
     "outDir": "lib",
     "rootDir": "src",
-    "moduleResolution": "node",
-    "module": "commonjs",
+    "module": "nodenext",
     "resolveJsonModule": true,
     "declaration": true,
     "sourceMap": true,
