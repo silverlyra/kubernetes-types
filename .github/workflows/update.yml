@@ -40,6 +40,19 @@ jobs:
               console.log(`Found new release: ${next}.0`);
             }
 
+            const { data: {download_url: url} } = await github.rest.repos.getContent({
+              owner: 'kubernetes',
+              repo: 'kubernetes',
+              ref: `v${next}.0`,
+              path: 'api/openapi-spec/swagger.json',
+            });
+
+            const response = await fetch(url);
+            const spec = await response.text();
+
+            await fs.writeFile(path.join(env.RUNNER_TEMP, 'swagger.json'), spec, 'utf-8');
+            console.log(`Saved swagger.json to ${env.RUNNER_TEMP}`);
+
             return { next, found, ref };
       - name: Checkout repository
         if: fromJson(steps.check.outputs.result).found
@@ -53,13 +66,20 @@ jobs:
         if: fromJson(steps.check.outputs.result).found
         id: update
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-          VERSION: v${{ fromJson(steps.check.outputs.result).found }}
+          VERSION: v${{ fromJson(steps.check.outputs.result).next }}
         run: |
           npm ci
-          npx tsc -p tsconfig.json
+          npm run build
 
-          ./bin/generate-kubernetes-types --api "$VERSION"
+          echo "Generating type package for ${VERSION}"
+          mkdir -p types
+
+          pwd
+          ls -Al
+
+          ./bin/generate-kubernetes-types --api "$VERSION" --file "${RUNNER_TEMP}/swagger.json"
 
           cd "./types/${VERSION}.0"
           npm publish
