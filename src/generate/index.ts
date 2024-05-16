@@ -31,7 +31,7 @@ async function main({api: apiVersion, file, patch, beta}: Arguments) {
   let api: API = file ? JSON.parse(readFileSync(file, 'utf8')) : await fetchAPI(apiVersion)
 
   let proj = new Project({
-    compilerOptions: {target: ScriptTarget.ES2016},
+    compilerOptions: {target: ScriptTarget.ES2016, declaration: true},
     useInMemoryFileSystem: true,
   })
 
